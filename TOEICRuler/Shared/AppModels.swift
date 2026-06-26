@@ -15,12 +15,13 @@ struct UserGoal: Codable, Identifiable, Equatable {
 
 struct Material: Codable, Identifiable, Equatable {
     var id: EntityID
-    var title: String
+    var name: String
     var type: MaterialType
     var targetParts: [TOEICPart]
-    var totalUnits: Int
-    var completedUnits: Int
-    var reviewCount: Int
+    var currentRound: Int
+    var targetRounds: Int
+    var progressRate: Double
+    var memo: String?
     var createdAt: Date
     var updatedAt: Date
 }

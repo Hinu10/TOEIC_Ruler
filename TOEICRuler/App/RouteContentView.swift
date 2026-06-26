@@ -10,7 +10,7 @@ struct RouteContentView: View {
         case .today:
             PlaceholderPage(route: route, message: "今日の学習メニューは Issue 6 で実装します。")
         case .materials:
-            PlaceholderPage(route: route, message: "教材管理は Issue 4 で実装します。")
+            MaterialsPage()
         case .studyLogs:
             PlaceholderPage(route: route, message: "学習記録は Issue 5 で実装します。")
         case .vocabulary:
@@ -20,7 +20,7 @@ struct RouteContentView: View {
         case .weaknessNotes:
             PlaceholderPage(route: route, message: "弱点ノートは Issue 9 で実装します。")
         case .goalSettings:
-            PlaceholderPage(route: route, message: "目標設定は Issue 3 で実装します。")
+            GoalSettingsPage()
         }
     }
 }

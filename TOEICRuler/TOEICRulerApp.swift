@@ -4,7 +4,7 @@ import SwiftUI
 struct TOEICRulerApp: App {
     var body: some Scene {
         WindowGroup {
-            RootPlaceholderView()
+            AppLayout()
         }
     }
 }

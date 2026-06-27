@@ -12,7 +12,7 @@ struct RouteContentView: View {
         case .materials:
             MaterialsPage()
         case .studyLogs:
-            PlaceholderPage(route: route, message: "学習記録は Issue 5 で実装します。")
+            StudyLogsPage()
         case .vocabulary:
             PlaceholderPage(route: route, message: "単語チェックは Issue 7 で実装します。")
         case .weaknesses:

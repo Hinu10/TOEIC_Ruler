@@ -8,7 +8,7 @@ struct RouteContentView: View {
         case .dashboard:
             PlaceholderPage(route: route, message: "学習状況の概要は Issue 10 で実装します。")
         case .today:
-            PlaceholderPage(route: route, message: "今日の学習メニューは Issue 6 で実装します。")
+            TodayPage()
         case .materials:
             MaterialsPage()
         case .studyLogs:

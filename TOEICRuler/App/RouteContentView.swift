@@ -16,7 +16,7 @@ struct RouteContentView: View {
         case .vocabulary:
             PlaceholderPage(route: route, message: "単語チェックは Issue 7 で実装します。")
         case .weaknesses:
-            PlaceholderPage(route: route, message: "弱点管理は Issue 8 で実装します。")
+            WeaknessPage()
         case .weaknessNotes:
             PlaceholderPage(route: route, message: "弱点ノートは Issue 9 で実装します。")
         case .goalSettings:

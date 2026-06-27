@@ -143,3 +143,17 @@ enum MistakeReasonCategory: String, CaseIterable, Codable, Identifiable {
         }
     }
 }
+
+enum MistakeClassificationType: String, CaseIterable, Codable, Identifiable {
+    case keyword
+    case manual
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .keyword: "キーワード分類"
+        case .manual: "手動タグ"
+        }
+    }
+}

@@ -128,11 +128,76 @@ struct StudyLog: Codable, Identifiable, Equatable {
 
 struct MistakeReason: Codable, Identifiable, Equatable {
     var id: EntityID
+    var studyLogID: EntityID?
+    var part: TOEICPart?
+    var text: String
+    var manualTags: [String]
+    var keywordTags: [String]
+    var classificationType: MistakeClassificationType
     var category: MistakeReasonCategory
     var title: String
     var detail: String?
     var createdAt: Date
     var updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case studyLogID
+        case part
+        case text
+        case manualTags
+        case keywordTags
+        case classificationType
+        case category
+        case title
+        case detail
+        case createdAt
+        case updatedAt
+    }
+
+    init(
+        id: EntityID,
+        studyLogID: EntityID?,
+        part: TOEICPart?,
+        text: String,
+        manualTags: [String],
+        keywordTags: [String],
+        classificationType: MistakeClassificationType,
+        category: MistakeReasonCategory,
+        title: String,
+        detail: String?,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.studyLogID = studyLogID
+        self.part = part
+        self.text = text
+        self.manualTags = manualTags
+        self.keywordTags = keywordTags
+        self.classificationType = classificationType
+        self.category = category
+        self.title = title
+        self.detail = detail
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(EntityID.self, forKey: .id)
+        studyLogID = try container.decodeIfPresent(EntityID.self, forKey: .studyLogID)
+        part = try container.decodeIfPresent(TOEICPart.self, forKey: .part)
+        category = try container.decode(MistakeReasonCategory.self, forKey: .category)
+        title = try container.decode(String.self, forKey: .title)
+        detail = try container.decodeIfPresent(String.self, forKey: .detail)
+        text = try container.decodeIfPresent(String.self, forKey: .text) ?? detail ?? title
+        manualTags = try container.decodeIfPresent([String].self, forKey: .manualTags) ?? []
+        keywordTags = try container.decodeIfPresent([String].self, forKey: .keywordTags) ?? []
+        classificationType = try container.decodeIfPresent(MistakeClassificationType.self, forKey: .classificationType) ?? .keyword
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
 }
 
 struct VocabularyItem: Codable, Identifiable, Equatable {

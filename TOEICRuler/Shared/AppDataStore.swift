@@ -33,6 +33,23 @@ final class AppDataStore: ObservableObject {
         try persist(nextData)
     }
 
+    func saveStudyLog(_ studyLog: StudyLog) throws {
+        var nextData = appData
+        if let index = nextData.studyLogs.firstIndex(where: { $0.id == studyLog.id }) {
+            nextData.studyLogs[index] = studyLog
+        } else {
+            nextData.studyLogs.append(studyLog)
+        }
+        nextData.studyLogs.sort { $0.studiedOn > $1.studiedOn }
+        try persist(nextData)
+    }
+
+    func deleteStudyLog(_ studyLog: StudyLog) throws {
+        var nextData = appData
+        nextData.studyLogs.removeAll { $0.id == studyLog.id }
+        try persist(nextData)
+    }
+
     private func persist(_ nextData: AppData) throws {
         try localStore.save(nextData)
         appData = nextData

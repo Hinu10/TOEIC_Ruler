@@ -52,13 +52,82 @@ struct MistakeReason: Codable, Identifiable, Equatable {
 
 struct VocabularyItem: Codable, Identifiable, Equatable {
     var id: EntityID
+    var materialID: EntityID?
     var term: String
     var meaning: String
+    var userMemo: String?
     var partOfSpeech: String?
-    var example: String?
+    var sourceRange: String
+    var round: Int
+    var lastCheckedAt: Date?
+    var latestResult: VocabularyRating?
     var sourceMaterialID: EntityID?
     var createdAt: Date
     var updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case materialID
+        case term
+        case meaning
+        case userMemo
+        case partOfSpeech
+        case sourceRange
+        case round
+        case lastCheckedAt
+        case latestResult
+        case sourceMaterialID
+        case createdAt
+        case updatedAt
+    }
+
+    init(
+        id: EntityID,
+        materialID: EntityID?,
+        term: String,
+        meaning: String,
+        userMemo: String?,
+        partOfSpeech: String?,
+        sourceRange: String,
+        round: Int,
+        lastCheckedAt: Date?,
+        latestResult: VocabularyRating?,
+        sourceMaterialID: EntityID?,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.materialID = materialID
+        self.term = term
+        self.meaning = meaning
+        self.userMemo = userMemo
+        self.partOfSpeech = partOfSpeech
+        self.sourceRange = sourceRange
+        self.round = round
+        self.lastCheckedAt = lastCheckedAt
+        self.latestResult = latestResult
+        self.sourceMaterialID = sourceMaterialID
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(EntityID.self, forKey: .id)
+        materialID = try container.decodeIfPresent(EntityID.self, forKey: .materialID)
+            ?? container.decodeIfPresent(EntityID.self, forKey: .sourceMaterialID)
+        term = try container.decode(String.self, forKey: .term)
+        meaning = try container.decode(String.self, forKey: .meaning)
+        userMemo = try container.decodeIfPresent(String.self, forKey: .userMemo)
+        partOfSpeech = try container.decodeIfPresent(String.self, forKey: .partOfSpeech)
+        sourceRange = try container.decodeIfPresent(String.self, forKey: .sourceRange) ?? ""
+        round = try container.decodeIfPresent(Int.self, forKey: .round) ?? 1
+        lastCheckedAt = try container.decodeIfPresent(Date.self, forKey: .lastCheckedAt)
+        latestResult = try container.decodeIfPresent(VocabularyRating.self, forKey: .latestResult)
+        sourceMaterialID = try container.decodeIfPresent(EntityID.self, forKey: .sourceMaterialID) ?? materialID
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
 }
 
 struct VocabularyCheckResult: Codable, Identifiable, Equatable {

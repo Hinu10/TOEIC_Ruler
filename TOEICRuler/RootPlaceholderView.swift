@@ -1,15 +1,32 @@
 import SwiftUI
 
 struct RootPlaceholderView: View {
+    @StateObject private var store = AppDataStore()
+
     var body: some View {
         NavigationStack {
             List(AppRoute.allCases) { route in
                 NavigationLink(route.title, value: route)
             }
             .navigationDestination(for: AppRoute.self) { route in
-                PlaceholderScreen(route: route)
+                destination(for: route)
             }
             .navigationTitle("TOEIC Ruler")
+        }
+        .environmentObject(store)
+    }
+
+    @ViewBuilder
+    private func destination(for route: AppRoute) -> some View {
+        switch route {
+        case .materials:
+            MaterialsPage()
+        case .weaknessNotes:
+            WeaknessNotebookPage()
+        case .goalSettings:
+            GoalSettingsPage()
+        default:
+            PlaceholderScreen(route: route)
         }
     }
 }

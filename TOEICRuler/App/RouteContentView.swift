@@ -6,7 +6,7 @@ struct RouteContentView: View {
     var body: some View {
         switch route {
         case .dashboard:
-            PlaceholderPage(route: route, message: "学習状況の概要は Issue 10 で実装します。")
+            DashboardPage()
         case .today:
             TodayPage()
         case .materials:

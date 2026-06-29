@@ -18,7 +18,7 @@ struct RouteContentView: View {
         case .weaknesses:
             WeaknessPage()
         case .weaknessNotes:
-            PlaceholderPage(route: route, message: "弱点ノートは Issue 9 で実装します。")
+            WeaknessNotebookPage()
         case .goalSettings:
             GoalSettingsPage()
         }

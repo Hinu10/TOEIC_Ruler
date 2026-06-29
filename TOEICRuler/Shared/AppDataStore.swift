@@ -61,6 +61,20 @@ final class AppDataStore: ObservableObject {
         try persist(nextData)
     }
 
+    func saveWeaknessNote(_ note: WeaknessNote) throws {
+        var nextData = appData
+        if let index = nextData.weaknessNotes.firstIndex(where: { $0.id == note.id || $0.part == note.part }) {
+            nextData.weaknessNotes[index] = note
+        } else {
+            nextData.weaknessNotes.insert(note, at: 0)
+        }
+        try persist(nextData)
+    }
+
+    func weaknessNote(for part: TOEICPart) -> WeaknessNote? {
+        appData.weaknessNotes.first { $0.part == part }
+    }
+
     func saveVocabularyItem(_ item: VocabularyItem) throws {
         var nextData = appData
         if let index = nextData.vocabularyItems.firstIndex(where: { $0.id == item.id }) {

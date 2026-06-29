@@ -21,6 +21,8 @@ struct RootPlaceholderView: View {
         switch route {
         case .materials:
             MaterialsPage()
+        case .weaknessNotes:
+            WeaknessNotebookPage()
         case .goalSettings:
             GoalSettingsPage()
         default:

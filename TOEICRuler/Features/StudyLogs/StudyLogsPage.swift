@@ -3,6 +3,7 @@ import SwiftUI
 struct StudyLogsPage: View {
     @EnvironmentObject private var store: AppDataStore
     @State private var editingDraft: StudyLogFormDraft?
+    @State private var deletingStudyLog: StudyLog?
     @State private var validationMessage: String?
 
     var body: some View {
@@ -23,6 +24,16 @@ struct StudyLogsPage: View {
             }
         }
         .navigationTitle("学習記録")
+        .alert("学習記録を削除しますか？", isPresented: deleteConfirmationBinding, presenting: deletingStudyLog) { studyLog in
+            Button("削除", role: .destructive) {
+                confirmDelete(studyLog)
+            }
+            Button("キャンセル", role: .cancel) {
+                deletingStudyLog = nil
+            }
+        } message: { studyLog in
+            Text("\(studyLog.studiedOn.formatted(date: .abbreviated, time: .omitted)) の \(studyLog.part.title) の記録を削除します。削除後は履歴、進捗、集計から除外されます。")
+        }
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button {
@@ -62,7 +73,23 @@ struct StudyLogsPage: View {
     }
 
     private func delete(_ studyLog: StudyLog) {
+        deletingStudyLog = studyLog
+    }
+
+    private func confirmDelete(_ studyLog: StudyLog) {
         try? store.deleteStudyLog(studyLog)
+        deletingStudyLog = nil
+    }
+
+    private var deleteConfirmationBinding: Binding<Bool> {
+        Binding(
+            get: { deletingStudyLog != nil },
+            set: { isPresented in
+                if !isPresented {
+                    deletingStudyLog = nil
+                }
+            }
+        )
     }
 }
 

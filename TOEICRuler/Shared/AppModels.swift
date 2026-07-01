@@ -15,8 +15,15 @@ struct UserGoal: Codable, Identifiable, Equatable {
 
 struct Material: Codable, Identifiable, Equatable {
     var id: EntityID
+    var templateID: String?
     var name: String
     var type: MaterialType
+    var publisher: String?
+    var author: String?
+    var targetLevel: String?
+    var sectionInfo: String?
+    var itemCount: Int?
+    var learningIdentifier: String?
     var targetParts: [TOEICPart]
     var currentRound: Int
     var targetRounds: Int
@@ -24,6 +31,117 @@ struct Material: Codable, Identifiable, Equatable {
     var memo: String?
     var createdAt: Date
     var updatedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case templateID
+        case name
+        case type
+        case publisher
+        case author
+        case targetLevel
+        case sectionInfo
+        case itemCount
+        case learningIdentifier
+        case targetParts
+        case currentRound
+        case targetRounds
+        case progressRate
+        case memo
+        case createdAt
+        case updatedAt
+    }
+
+    init(
+        id: EntityID,
+        templateID: String? = nil,
+        name: String,
+        type: MaterialType,
+        publisher: String? = nil,
+        author: String? = nil,
+        targetLevel: String? = nil,
+        sectionInfo: String? = nil,
+        itemCount: Int? = nil,
+        learningIdentifier: String? = nil,
+        targetParts: [TOEICPart],
+        currentRound: Int,
+        targetRounds: Int,
+        progressRate: Double,
+        memo: String?,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.templateID = templateID
+        self.name = name
+        self.type = type
+        self.publisher = publisher
+        self.author = author
+        self.targetLevel = targetLevel
+        self.sectionInfo = sectionInfo
+        self.itemCount = itemCount
+        self.learningIdentifier = learningIdentifier
+        self.targetParts = targetParts
+        self.currentRound = currentRound
+        self.targetRounds = targetRounds
+        self.progressRate = progressRate
+        self.memo = memo
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(EntityID.self, forKey: .id)
+        templateID = try container.decodeIfPresent(String.self, forKey: .templateID)
+        name = try container.decode(String.self, forKey: .name)
+        type = try container.decode(MaterialType.self, forKey: .type)
+        publisher = try container.decodeIfPresent(String.self, forKey: .publisher)
+        author = try container.decodeIfPresent(String.self, forKey: .author)
+        targetLevel = try container.decodeIfPresent(String.self, forKey: .targetLevel)
+        sectionInfo = try container.decodeIfPresent(String.self, forKey: .sectionInfo)
+        itemCount = try container.decodeIfPresent(Int.self, forKey: .itemCount)
+        learningIdentifier = try container.decodeIfPresent(String.self, forKey: .learningIdentifier)
+        targetParts = try container.decode([TOEICPart].self, forKey: .targetParts)
+        currentRound = try container.decode(Int.self, forKey: .currentRound)
+        targetRounds = try container.decode(Int.self, forKey: .targetRounds)
+        progressRate = try container.decode(Double.self, forKey: .progressRate)
+        memo = try container.decodeIfPresent(String.self, forKey: .memo)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
+}
+
+struct MaterialTemplate: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let type: MaterialType
+    let publisher: String
+    let author: String
+    let targetLevel: String
+    let sectionInfo: String
+    let itemCount: Int
+    let learningIdentifier: String
+    let targetParts: [TOEICPart]
+    let targetRounds: Int
+
+    static let goldenPhrase = MaterialTemplate(
+        id: "golden-phrase",
+        name: "金のフレーズ",
+        type: .vocabularyBook,
+        publisher: "朝日新聞出版",
+        author: "TEX加藤",
+        targetLevel: "TOEIC 600-990点",
+        sectionInfo: "600点レベル / 730点レベル / 860点レベル / 990点レベル",
+        itemCount: 1000,
+        learningIdentifier: "golden-phrase-vocabulary-range",
+        targetParts: [.part5, .part6, .part7],
+        targetRounds: 3
+    )
+
+    static let selectableTemplates: [MaterialTemplate] = [
+        .goldenPhrase
+    ]
 }
 
 struct StudyLog: Codable, Identifiable, Equatable {

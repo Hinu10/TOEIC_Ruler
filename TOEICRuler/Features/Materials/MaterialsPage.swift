@@ -110,17 +110,56 @@ struct MaterialForm: View {
     @Binding var draft: MaterialFormDraft
 
     var body: some View {
+        let selection = Binding<String>(
+            get: { draft.templateID ?? MaterialFormDraft.customTemplateID },
+            set: { selection in
+                var nextDraft = draft
+                nextDraft.applyTemplateSelection(selection)
+                draft = nextDraft
+            }
+        )
+
         Section("基本情報") {
-            TextField("教材名", text: $draft.name)
-            Picker("教材種別", selection: $draft.type) {
-                ForEach(MaterialType.allCases) { type in
-                    Text(type.title).tag(type)
+            Picker("教材", selection: selection) {
+                ForEach(MaterialTemplate.selectableTemplates) { template in
+                    Text(template.name).tag(template.id)
                 }
+                Text("その他").tag(MaterialFormDraft.customTemplateID)
+            }
+
+            if draft.templateID == MaterialTemplate.goldenPhrase.id {
+                LabeledContent("出版社", value: draft.publisher)
+                LabeledContent("著者", value: draft.author)
+                LabeledContent("対象レベル", value: draft.targetLevel)
+                LabeledContent("単語数", value: "\(draft.itemCount)")
+            } else {
+                TextField("教材名", text: $draft.name)
+                Picker("教材種別", selection: $draft.type) {
+                    ForEach(MaterialType.allCases) { type in
+                        Text(type.title).tag(type)
+                    }
+                }
+                TextField("出版社", text: $draft.publisher)
+                TextField("著者", text: $draft.author)
+                TextField("対象レベル", text: $draft.targetLevel)
+                Stepper("問題数または単語数 \(draft.itemCount)", value: $draft.itemCount, in: 0...9999)
             }
         }
 
+        Section("教材情報") {
+            TextField("セクション / Chapter 情報", text: $draft.sectionInfo, axis: .vertical)
+                .lineLimit(2...5)
+            TextField("学習記録に必要な識別情報", text: $draft.learningIdentifier, axis: .vertical)
+                .lineLimit(2...4)
+        }
+
         Section("対象Part") {
-            PartSelector(selection: $draft.targetParts)
+            if draft.templateID == MaterialTemplate.goldenPhrase.id {
+                Text(draft.targetParts.sorted { $0.number < $1.number }.map(\.title).joined(separator: ", "))
+                    .foregroundStyle(.secondary)
+            } else {
+                PartSelector(selection: $draft.targetParts)
+            }
         }
 
         Section("進捗") {
@@ -181,6 +220,12 @@ struct MaterialCard: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+
+            if let publisher = material.publisher, !publisher.isEmpty {
+                Text([publisher, material.author].compactMap { $0 }.joined(separator: " / "))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 6)
     }
@@ -203,9 +248,18 @@ struct ProgressBar: View {
 }
 
 struct MaterialFormDraft: Identifiable {
+    static let customTemplateID = "custom"
+
     var id: UUID
+    var templateID: String?
     var name: String
     var type: MaterialType
+    var publisher: String
+    var author: String
+    var targetLevel: String
+    var sectionInfo: String
+    var itemCount: Int
+    var learningIdentifier: String
     var targetParts: Set<TOEICPart>
     var currentRound: Int
     var targetRounds: Int
@@ -213,24 +267,39 @@ struct MaterialFormDraft: Identifiable {
     var memo: String
     var createdAt: Date
 
-    var isNew: Bool { name.isEmpty && createdAt.timeIntervalSinceNow > -5 }
+    var isNew: Bool { createdAt.timeIntervalSinceNow > -5 }
 
     init() {
         id = UUID()
+        templateID = nil
         name = ""
         type = .officialBook
+        publisher = ""
+        author = ""
+        targetLevel = ""
+        sectionInfo = ""
+        itemCount = 0
+        learningIdentifier = ""
         targetParts = []
         currentRound = 0
         targetRounds = 3
         progressRate = 0
         memo = ""
         createdAt = Date()
+        applyTemplateSelection(MaterialTemplate.goldenPhrase.id)
     }
 
     init(material: Material) {
         id = material.id
+        templateID = material.templateID
         name = material.name
         type = material.type
+        publisher = material.publisher ?? ""
+        author = material.author ?? ""
+        targetLevel = material.targetLevel ?? ""
+        sectionInfo = material.sectionInfo ?? ""
+        itemCount = material.itemCount ?? 0
+        learningIdentifier = material.learningIdentifier ?? ""
         targetParts = Set(material.targetParts)
         currentRound = material.currentRound
         targetRounds = material.targetRounds
@@ -252,12 +321,45 @@ struct MaterialFormDraft: Identifiable {
         return nil
     }
 
+    mutating func applyTemplateSelection(_ selection: String) {
+        guard selection != Self.customTemplateID else {
+            templateID = nil
+            return
+        }
+        guard let template = MaterialTemplate.selectableTemplates.first(where: { $0.id == selection }) else {
+            return
+        }
+        templateID = template.id
+        name = template.name
+        type = template.type
+        publisher = template.publisher
+        author = template.author
+        targetLevel = template.targetLevel
+        sectionInfo = template.sectionInfo
+        itemCount = template.itemCount
+        learningIdentifier = template.learningIdentifier
+        targetParts = Set(template.targetParts)
+        targetRounds = template.targetRounds
+    }
+
+    private func cleaned(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
     func makeMaterial() -> Material {
         let now = Date()
         return Material(
             id: id,
+            templateID: templateID,
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             type: type,
+            publisher: cleaned(publisher),
+            author: cleaned(author),
+            targetLevel: cleaned(targetLevel),
+            sectionInfo: cleaned(sectionInfo),
+            itemCount: itemCount > 0 ? itemCount : nil,
+            learningIdentifier: cleaned(learningIdentifier),
             targetParts: targetParts.sorted { $0.number < $1.number },
             currentRound: currentRound,
             targetRounds: targetRounds,

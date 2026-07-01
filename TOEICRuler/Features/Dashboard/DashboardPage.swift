@@ -10,10 +10,12 @@ struct DashboardPage: View {
     var body: some View {
         List {
             DashboardGoalSection(summary: summary)
+            DashboardQuickActionsSection()
             DashboardWeeklySection(summary: summary)
             DashboardMaterialsSection(summary: summary)
             DashboardWeaknessSection(partSummaries: summary.partSummaries)
             DashboardVocabularySection(summary: summary)
+            DashboardPremiumAnalyticsSection()
             DashboardRecentLogsSection(logs: summary.recentLogs, materials: store.appData.materials)
         }
         .navigationTitle("ダッシュボード")
@@ -120,6 +122,18 @@ struct DashboardSummary {
         appData.vocabularyItems.filter { $0.latestResult == .circle }.count
     }
 
+    var vocabularyCircleCount: Int {
+        appData.vocabularyItems.filter { $0.latestResult == .circle }.count
+    }
+
+    var vocabularyTriangleCount: Int {
+        appData.vocabularyItems.filter { $0.latestResult == .triangle }.count
+    }
+
+    var vocabularyCrossCount: Int {
+        appData.vocabularyItems.filter { $0.latestResult == .cross }.count
+    }
+
     var recentLogs: [StudyLog] {
         Array(appData.studyLogs.sorted { $0.studiedOn > $1.studiedOn }.prefix(5))
     }
@@ -177,6 +191,30 @@ struct DashboardPartSummary: Identifiable {
             accuracyPenalty = 0
         }
         return (isGoalWeakPart ? 8 : 0) + mistakeCount * 3 + lowUnderstandingCount * 2 + accuracyPenalty
+    }
+}
+
+struct DashboardQuickActionsSection: View {
+    var body: some View {
+        Section("ショートカット") {
+            NavigationLink {
+                RouteContentView(route: .today)
+            } label: {
+                Label("今日の学習メニュー", systemImage: AppRoute.today.systemImage)
+            }
+
+            NavigationLink {
+                RouteContentView(route: .materials)
+            } label: {
+                Label("教材を確認", systemImage: AppRoute.materials.systemImage)
+            }
+
+            NavigationLink {
+                RouteContentView(route: .studyLogs)
+            } label: {
+                Label("学習記録を追加", systemImage: AppRoute.studyLogs.systemImage)
+            }
+        }
     }
 }
 
@@ -304,11 +342,39 @@ struct DashboardVocabularySection: View {
                 )
             } else {
                 HStack(spacing: 12) {
-                    DashboardMetricTile(title: "復習対象", value: "\(summary.vocabularyNeedsReviewCount)", systemImage: "exclamationmark.circle")
-                    DashboardMetricTile(title: "覚えた", value: "\(summary.vocabularyMasteredCount)", systemImage: "checkmark.seal")
-                    DashboardMetricTile(title: "登録数", value: "\(summary.appData.vocabularyItems.count)", systemImage: "textformat")
+                    DashboardMetricTile(title: "○", value: "\(summary.vocabularyCircleCount)", systemImage: "checkmark.seal")
+                    DashboardMetricTile(title: "△", value: "\(summary.vocabularyTriangleCount)", systemImage: "exclamationmark.circle")
+                    DashboardMetricTile(title: "×", value: "\(summary.vocabularyCrossCount)", systemImage: "xmark.circle")
                 }
+
+                HStack {
+                    Text("復習対象")
+                    Spacer()
+                    Text("\(summary.vocabularyNeedsReviewCount)/\(summary.appData.vocabularyItems.count)件")
+                        .foregroundStyle(.secondary)
+                }
+                .font(.subheadline)
             }
+        }
+    }
+}
+
+struct DashboardPremiumAnalyticsSection: View {
+    var body: some View {
+        Section("詳細分析") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label("Premium", systemImage: "chart.xyaxis.line")
+                        .font(.headline)
+                    Spacer()
+                    TierBadge(tier: .premium)
+                }
+
+                Text("学習時間推移、Part別正答率、弱点の変化をここに追加予定です。")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 6)
         }
     }
 }
@@ -397,9 +463,13 @@ struct DashboardMaterialRow: View {
                     .foregroundStyle(.secondary)
             }
             ProgressBar(value: material.progressRate / 100)
-            Text(material.targetParts.sorted { $0.number < $1.number }.map(\.title).joined(separator: ", "))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack {
+                Label("\(material.currentRound)/\(material.targetRounds)周", systemImage: "arrow.triangle.2.circlepath")
+                Spacer()
+                Text(material.targetParts.sorted { $0.number < $1.number }.map(\.title).joined(separator: ", "))
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
     }
